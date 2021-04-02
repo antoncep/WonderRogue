@@ -1,2 +1,2 @@
 # WonderRogue
-Roguelike in C
+Roguelike in C with ncurses

@@ -1,47 +1,34 @@
 /*******************************************************************************
 *  
-*  main.c
+*  utilities.c
 *  
 *  author: AC Pretorius
 *  date  : 01/04/2021
 *  
 *******************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include "engine.h"
+#include "utilities.h"
 
 /*******************************************************************************
 *  
-*  program entry point
+*  take char string and return calculated hash value
 *  
 *******************************************************************************/
-int main(int argc, char *argv[])
+uint32_t strhash(char *string)
 {
-	engine_struct *engine = init_engine();
-	if (!engine) {
+	uint32_t hash = 17;
+	int32_t index = 0;
+	
+	while (string && string[index]) {
 		
-		printf("could not initialize engine!\n");
-		return -1;
+		hash = (hash * 31) ^ string[index++];
 	}
 	
-	engine->new_game(engine, "Tomb of Bones", "Player");
-	do {
-		engine->render_screen(engine);
-		
-	} while(engine->handle_input(engine) != 'q');
-	
-	if (engine && !stop_engine(engine)) {
-		
-		printf("could not free engine memory!\n");
-		return -1;
-	}
-	
-	return 0;
+	return hash;
 }
 
 /*******************************************************************************
 *  
-*  END main.c
+*  END utilities.c
 *  
 *******************************************************************************/

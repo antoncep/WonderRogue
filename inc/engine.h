@@ -9,20 +9,24 @@
 *  
 *******************************************************************************/
 
+#include <stdint.h>
+#include <stdbool.h>
 #include "dungeon.h"
+#include "player.h"
 
 typedef struct engine_struct {
 	
 	dungeon_struct *dungeon;
+	player_struct *player;
 	
-	void (*render_screen)(struct engine_struct *);
+	bool (*render_screen)(struct engine_struct *);
 	char (*handle_input)(struct engine_struct *);
-	void (*new_game)(struct engine_struct *);
+	bool (*new_game)(struct engine_struct *, char *, char *);
 	
 } engine_struct;
 
 engine_struct *init_engine(void);
-int stop_engine(engine_struct *);
+bool stop_engine(engine_struct *);
 
 /*******************************************************************************
 *  

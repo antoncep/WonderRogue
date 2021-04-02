@@ -1,10 +1,21 @@
 #ifndef _DUNGEON_H_
 #define _DUNGEON_H_
+/*******************************************************************************
+*  
+*  dungeon.h
+*  
+*  author: AC Pretorius
+*  date  : 01/04/2021
+*  
+*******************************************************************************/
 
 #include <stdint.h>
+#include <stdbool.h>
 #include "vector2d.h"
 
-typedef enum {
+#define DNAM_LENGTH 24
+
+typedef enum dtile_symbol_enum {
 	
 	DSYM_EMPTY = ' ',
 	DSYM_FLOOR = '.',
@@ -12,7 +23,7 @@ typedef enum {
 	
 } dtile_symbol_enum;
 
-typedef struct {
+typedef struct dtile_struct {
 	
 	uint32_t bgcolor;
 	uint32_t fgcolor;
@@ -20,7 +31,7 @@ typedef struct {
 	
 } dtile_struct;
 
-typedef struct {
+typedef struct droom_struct {
 	
 	vector2d_struct position;
 	vector2d_struct size;
@@ -28,7 +39,7 @@ typedef struct {
 	
 } droom_struct;
 
-typedef enum {
+typedef enum dlevel_type_enum {
 	
 	DLVL_SAFE,
 	DLVL_MONSTER,
@@ -36,7 +47,7 @@ typedef enum {
 	
 } dlevel_type_enum;
 
-typedef struct {
+typedef struct dlevel_struct {
 	
 	uint32_t zlevel;
 	dlevel_type_enum type;
@@ -45,24 +56,28 @@ typedef struct {
 	
 } dlevel_struct;
 
-typedef enum {
+typedef enum dungeon_type_enum {
 	
 	DNGN_FINITE,
 	DNGN_INFINITE,
 	
 } dungeon_type_enum;
 
-typedef struct {
+typedef struct dungeon_struct {
 	
-	char name[24];
+	char name[DNAM_LENGTH];
 	dungeon_type_enum type;
 	uint32_t num_zlevels;
 	dlevel_struct *zlevels[];
 	
 } dungeon_struct;
 
-dungeon_struct *create_dungeon(uint32_t num_zlevels, uint32_t size_x, uint32_t size_y);
-int32_t delete_dungeon(dungeon_struct *dungeon);
-dlevel_struct *create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y);
+dungeon_struct *create_dungeon(char *, uint32_t, uint32_t, uint32_t);
+bool destruct_dungeon(dungeon_struct *);
 
+/*******************************************************************************
+*  
+*  END dungeon.h
+*  
+*******************************************************************************/
 #endif // _DUNGEON_H_
