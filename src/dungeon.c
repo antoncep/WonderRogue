@@ -7,9 +7,9 @@
 *  
 *******************************************************************************/
 
-#include <string.h>
-#include <malloc.h>
 #include "dungeon.h"
+#include <malloc.h>
+#include <string.h>
 
 static dlevel_struct *create_dlevel(uint32_t, uint32_t, uint32_t);
 
@@ -22,15 +22,15 @@ dungeon_struct *create_dungeon(char *name, uint32_t num_zlevels, uint32_t size_x
 {
 	dungeon_struct *dungeon = NULL;
 	
-	dungeon = (dungeon_struct *)malloc(sizeof(dungeon_struct) + (num_zlevels * sizeof(void *)));
+	dungeon = (dungeon_struct *)malloc(sizeof(dungeon_struct) + (num_zlevels * sizeof(dlevel_struct *)));
 	if (!dungeon) {
 		
 		printf("could not allocate memory for dungeon!\n");
 		return NULL;
 	}
 	
-	//name[DNAM_LENGTH - 1] = '\0';
 	strncpy(dungeon->name, name, DNAM_LENGTH);
+	dungeon->name[DNAM_LENGTH - 1] = '\0';
 	
 	dungeon->type        = (num_zlevels > 0) ? DNGN_FINITE : DNGN_INFINITE;
 	dungeon->num_zlevels = num_zlevels;
@@ -99,9 +99,7 @@ static dlevel_struct *create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t s
 	
 	dlevel->zlevel = zlevel;
 	dlevel->type   = (dlevel->zlevel == 0) ? DLVL_SAFE : DLVL_MONSTER;
-	
-	dlevel->size.x = size_x;
-	dlevel->size.y = size_y;
+	dlevel->size   = (vec2d_t){ size_x, size_y };
 	
 	uint32_t idx = 0;
 	for (uint32_t tile_y = 0; tile_y < dlevel->size.y; tile_y++) {

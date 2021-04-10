@@ -15,62 +15,71 @@
 
 #define DNAM_LENGTH 24
 
-typedef enum dtile_symbol_enum {
+typedef struct vector2d_t vec2d_t;
+
+typedef enum dtile_symbol_t dtile_symbol_enum;
+enum dtile_symbol_t {
 	
 	DSYM_EMPTY = ' ',
 	DSYM_FLOOR = '.',
 	DSYM_WALL  = '#',
 	
-} dtile_symbol_enum;
+};
 
-typedef struct dtile_struct {
+typedef struct dtile_t dtile_struct;
+struct dtile_t {
 	
 	uint32_t bgcolor;
 	uint32_t fgcolor;
 	dtile_symbol_enum symbol;
 	
-} dtile_struct;
+};
 
-typedef struct droom_struct {
+typedef struct droom_t droom_struct;
+struct droom_t {
 	
-	vector2d_struct position;
-	vector2d_struct size;
+	vec2d_t position;
+	vec2d_t size;
 	dtile_struct tiles[];
 	
-} droom_struct;
+};
 
-typedef enum dlevel_type_enum {
+typedef enum dlevel_type_t dlevel_type_enum;
+enum dlevel_type_t {
 	
 	DLVL_SAFE,
 	DLVL_MONSTER,
 	DLVL_BOSS,
 	
-} dlevel_type_enum;
+};
 
-typedef struct dlevel_struct {
+typedef struct dlevel_t dlevel_struct;
+struct dlevel_t {
 	
 	uint32_t zlevel;
 	dlevel_type_enum type;
-	vector2d_struct size;
+	vec2d_t size;
 	dtile_struct tiles[];
 	
-} dlevel_struct;
+};
 
-typedef enum dungeon_type_enum {
+typedef enum dungeon_type_t dungeon_type_enum;
+enum dungeon_type_t {
 	
 	DNGN_FINITE,
 	DNGN_INFINITE,
 	
-} dungeon_type_enum;
+};
 
-typedef struct dungeon_struct {
+typedef struct dungeon_t dungeon_struct;
+struct dungeon_t {
 	
 	char name[DNAM_LENGTH];
 	dungeon_type_enum type;
 	uint32_t num_zlevels;
 	dlevel_struct *zlevels[];
 	
-} dungeon_struct;
+};
 
 dungeon_struct *create_dungeon(char *, uint32_t, uint32_t, uint32_t);
 bool destruct_dungeon(dungeon_struct *);

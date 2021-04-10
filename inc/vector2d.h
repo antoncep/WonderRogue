@@ -9,17 +9,18 @@
 *  
 *******************************************************************************/
 
-typedef struct vector2d_struct {
+typedef struct vector2d_t vec2d_t;
+struct vector2d_t {
 	
 	float x;
 	float y;
 	
-} vector2d_struct;
+};
 
-vector2d_struct vector2d_normalize(vector2d_struct);
-vector2d_struct vector2d_add(vector2d_struct, vector2d_struct);
-vector2d_struct vector2d_sub(vector2d_struct, vector2d_struct);
-vector2d_struct vector2d_dot(vector2d_struct, vector2d_struct);
+vec2d_t vector2d_normalize(vec2d_t);
+vec2d_t vector2d_add(vec2d_t, vec2d_t);
+vec2d_t vector2d_sub(vec2d_t, vec2d_t);
+float vector2d_dot(vec2d_t, vec2d_t);
 
 /*******************************************************************************
 *  

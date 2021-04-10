@@ -15,23 +15,25 @@
 
 #define PNAM_LENGTH 24
 
-typedef enum player_symbol_enum {
+typedef enum player_symbol_t player_symbol_enum;
+enum player_symbol_t {
 	
 	PSYM_NORMAL = '@',
 	
-} player_symbol_enum;
+};
 
-typedef struct player_struct {
+typedef struct player_t player_struct;
+struct player_t {
 	
 	char name[PNAM_LENGTH];
 	player_symbol_enum symbol;
-	vector2d_struct position;
+	vec2d_t position;
 	
-	bool (*move)(struct player_struct *, vector2d_struct);
+	bool (*move_toward)(player_struct *, vec2d_t);
 	
-} player_struct;
+};
 
-player_struct *create_player(char *, vector2d_struct);
+player_struct *create_player(char *, vec2d_t);
 bool destruct_player(player_struct *);
 
 /*******************************************************************************

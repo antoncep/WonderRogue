@@ -7,20 +7,23 @@
 *  
 *******************************************************************************/
 
+#include "engine.h"
+#include "vector2d.h"
+#include "dungeon.h"
+#include "player.h"
 #include <malloc.h>
 #include <ncurses.h>
-#include "engine.h"
 
+static bool init_game(engine_struct *, char *, char *);
 static bool render_screen(engine_struct *);
 static char handle_input(engine_struct *);
-static bool new_game(engine_struct *, char *, char *);
 
 /*******************************************************************************
 *  
 *  initialize engine and return engine_struct *
 *  
 *******************************************************************************/
-engine_struct *init_engine(void)
+engine_struct *create_engine(void)
 {
 	engine_struct *engine = NULL;
 	
@@ -34,9 +37,9 @@ engine_struct *init_engine(void)
 	engine->dungeon = NULL;
 	engine->player  = NULL;
 	
+	engine->init_game     = init_game;
 	engine->render_screen = render_screen;
 	engine->handle_input  = handle_input;
-	engine->new_game      = new_game;
 	
 	initscr();
 	cbreak();
@@ -52,7 +55,7 @@ engine_struct *init_engine(void)
 *  take engine_struct * and free memory for members and self
 *  
 *******************************************************************************/
-bool stop_engine(engine_struct *engine)
+bool destruct_engine(engine_struct *engine)
 {
 	if (!engine) {
 		
@@ -78,6 +81,46 @@ bool stop_engine(engine_struct *engine)
 	
 	free(engine);
 	engine = NULL;
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  take engine_struct * and initialize new dungeon for gameplay
+*  
+*******************************************************************************/
+static bool init_game(engine_struct *engine, char *dungeon_name, char *player_name)
+{
+	if (!engine) {
+		
+		printf("invalid engine!\n");
+		return false;
+	}
+	
+	if (engine->dungeon && !destruct_dungeon(engine->dungeon)) {
+		
+		printf("could not destruct dungeon!\n");
+		return false;
+	}
+	engine->dungeon = create_dungeon(dungeon_name, 1, 350, 350);
+	if (!engine->dungeon) {
+		
+		printf("could not create dungeon!\n");
+		return false;
+	}
+	
+	if (engine->player && !destruct_player(engine->player)) {
+		
+		printf("could not destruct player!\n");
+		return false;
+	}
+	engine->player = create_player(player_name, (vec2d_t){ 0.0, 0.0 });
+	if (!engine->player) {
+		
+		printf("could not create player!\n");
+		return false;
+	}
 	
 	return true;
 }
@@ -134,48 +177,42 @@ static char handle_input(engine_struct *engine)
 		printf("invalid engine!\n");
 		return '\0';
 	}
-	
-	return (char)getch();
-}
-
-/*******************************************************************************
-*  
-*  take engine_struct * and initialize new dungeon for gameplay
-*  
-*******************************************************************************/
-static bool new_game(engine_struct *engine, char *dungeon_name, char *player_name)
-{
-	if (!engine) {
-		
-		printf("invalid engine!\n");
-		return false;
-	}
-	
-	if (engine->dungeon && !destruct_dungeon(engine->dungeon)) {
-		
-		printf("could not destruct dungeon!\n");
-		return false;
-	}
-	engine->dungeon = create_dungeon(dungeon_name, 1, 350, 350);
 	if (!engine->dungeon) {
 		
-		printf("could not create dungeon!\n");
-		return false;
+		printf("invalid dungeon!\n");
+		return '\0';
 	}
-	
-	if (engine->player && !destruct_player(engine->player)) {
-		
-		printf("could not destruct player!\n");
-		return false;
-	}
-	engine->player = create_player(player_name, (vector2d_struct){ 0.0, 0.0 });
 	if (!engine->player) {
 		
-		printf("could not create player!\n");
-		return false;
+		printf("invalid player!\n");
+		return '\0';
 	}
 	
-	return true;
+	int32_t ch = getch();
+	
+	switch (ch) {
+		
+		case KEY_UP:
+			engine->player->move_toward(engine->player, (vec2d_t){ 0.0, -1.0 });
+			break;
+		
+		case KEY_DOWN:
+			engine->player->move_toward(engine->player, (vec2d_t){ 0.0, 1.0 });
+			break;
+		
+		case KEY_LEFT:
+			engine->player->move_toward(engine->player, (vec2d_t){ -1.0, 0.0 });
+			break;
+		
+		case KEY_RIGHT:
+			engine->player->move_toward(engine->player, (vec2d_t){ 1.0, 0.0 });
+			break;
+		
+		default:
+			printf("unhandled input!\n");
+	}
+	
+	return (char)ch;
 }
 
 /*******************************************************************************

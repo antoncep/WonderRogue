@@ -11,22 +11,24 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "dungeon.h"
-#include "player.h"
 
-typedef struct engine_struct {
+typedef struct dungeon_t dungeon_struct;
+typedef struct player_t player_struct;
+
+typedef struct engine_t engine_struct;
+struct engine_t {
 	
 	dungeon_struct *dungeon;
 	player_struct *player;
 	
-	bool (*render_screen)(struct engine_struct *);
-	char (*handle_input)(struct engine_struct *);
-	bool (*new_game)(struct engine_struct *, char *, char *);
+	bool (*init_game)(engine_struct *, char *, char *);
+	bool (*render_screen)(engine_struct *);
+	char (*handle_input)(engine_struct *);
 	
-} engine_struct;
+};
 
-engine_struct *init_engine(void);
-bool stop_engine(engine_struct *);
+engine_struct *create_engine(void);
+bool destruct_engine(engine_struct *);
 
 /*******************************************************************************
 *  

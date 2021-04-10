@@ -7,56 +7,56 @@
 *  
 *******************************************************************************/
 
-#include <math.h>
 #include "vector2d.h"
+#include <math.h>
 
 /*******************************************************************************
 *  
-*  take vector2d_struct to normalize and return new vector2d_struct
+*  take vec2d_t to normalize and return new vec2d_t
 *  
 *******************************************************************************/
-vector2d_struct vector2d_normalize(vector2d_struct vector)
+vec2d_t vector2d_normalize(vec2d_t vector_v)
 {
-	float length = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
-	vector.x /= length;
-	vector.y /= length;
-	return vector;
+	float length = sqrt(pow(vector_v.x, 2) + pow(vector_v.y, 2));
+	vector_v.x /= length;
+	vector_v.y /= length;
+	return vector_v;
 }
 
 /*******************************************************************************
 *  
-*  take 2 vector2d_structs to add and return new vector2d_struct
+*  take 2 vec2d_t to add and return new vec2d_t
 *  
 *******************************************************************************/
-vector2d_struct vector2d_add(vector2d_struct vector1, vector2d_struct vector2)
+vec2d_t vector2d_add(vec2d_t vector_v, vec2d_t vector_w)
 {
-	vector1.x += vector2.x;
-	vector1.y += vector2.y;
-	return vector1;
+	vector_v.x += vector_w.x;
+	vector_v.y += vector_w.y;
+	return vector_v;
 }
 
 /*******************************************************************************
 *  
-*  take 2 vector2d_structs to subtract and return new vector2d_struct
+*  take 2 vec2d_t to subtract and return new vec2d_t
 *  
 *******************************************************************************/
-vector2d_struct vector2d_sub(vector2d_struct vector1, vector2d_struct vector2)
+vec2d_t vector2d_sub(vec2d_t vector_v, vec2d_t vector_w)
 {
-	vector1.x -= vector2.x;
-	vector1.y -= vector2.y;
-	return vector1;
+	vector_v.x -= vector_w.x;
+	vector_v.y -= vector_w.y;
+	return vector_v;
 }
 
 /*******************************************************************************
 *  
-*  take 2 vector2d_structs to calculate dot product and return new vector2d_struct
+*  take 2 vec2d_t to calculate dot product and return float
 *  
 *******************************************************************************/
-vector2d_struct vector2d_dot(vector2d_struct vector1, vector2d_struct vector2)
+float vector2d_dot(vec2d_t vector_v, vec2d_t vector_w)
 {
-	vector2d_struct result;
-	result = vector1;
-	return result;
+	vector_v.x *= vector_w.x;
+	vector_v.y *= vector_w.y;
+	return vector_v.x + vector_v.y;
 }
 
 /*******************************************************************************

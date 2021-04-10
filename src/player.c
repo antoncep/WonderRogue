@@ -7,18 +7,19 @@
 *  
 *******************************************************************************/
 
-#include <string.h>
-#include <malloc.h>
 #include "player.h"
+#include "vector2d.h"
+#include <malloc.h>
+#include <string.h>
 
-static bool move(player_struct *, vector2d_struct);
+static bool move_toward(player_struct *, vec2d_t);
 
 /*******************************************************************************
 *  
 *  initialize player and return player_struct *
 *  
 *******************************************************************************/
-player_struct *create_player(char *name, vector2d_struct position)
+player_struct *create_player(char *name, vec2d_t position)
 {
 	player_struct *player = NULL;
 	
@@ -29,13 +30,13 @@ player_struct *create_player(char *name, vector2d_struct position)
 		return NULL;
 	}
 	
-	//name[PNAM_LENGTH - 1] = '\0';
 	strncpy(player->name, name, PNAM_LENGTH);
+	player->name[PNAM_LENGTH - 1] = '\0';
 	
 	player->symbol   = PSYM_NORMAL;
 	player->position = position;
 	
-	player->move = move;
+	player->move_toward = move_toward;
 	
 	return player;
 }
@@ -61,10 +62,10 @@ bool destruct_player(player_struct *player)
 
 /*******************************************************************************
 *  
-*  take player_struct * and vector2d_struct and update position
+*  take player_struct * and vec2d_t and update position
 *  
 *******************************************************************************/
-static bool move(player_struct *player, vector2d_struct direction)
+static bool move_toward(player_struct *player, vec2d_t direction)
 {
 	if (!player) {
 		

@@ -7,9 +7,9 @@
 *  
 *******************************************************************************/
 
+#include "engine.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "engine.h"
 
 /*******************************************************************************
 *  
@@ -18,22 +18,22 @@
 *******************************************************************************/
 int main(int argc, char *argv[])
 {
-	engine_struct *engine = init_engine();
+	engine_struct *engine = create_engine();
 	if (!engine) {
 		
 		printf("could not initialize engine!\n");
 		return -1;
 	}
 	
-	engine->new_game(engine, "Tomb of Bones", "Player");
+	engine->init_game(engine, "Tomb of Bones", "Player");
 	do {
 		engine->render_screen(engine);
 		
 	} while(engine->handle_input(engine) != 'q');
 	
-	if (engine && !stop_engine(engine)) {
+	if (engine && !destruct_engine(engine)) {
 		
-		printf("could not free engine memory!\n");
+		printf("could not stop engine!\n");
 		return -1;
 	}
 	
