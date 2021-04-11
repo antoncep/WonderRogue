@@ -8,21 +8,19 @@
 *******************************************************************************/
 
 #include "dungeon.h"
-#include <malloc.h>
-#include <string.h>
 
-static dlevel_struct *create_dlevel(uint32_t, uint32_t, uint32_t);
+static dlevel_t *create_dlevel(uint32_t, uint32_t, uint32_t);
 
 /*******************************************************************************
 *  
-*  initialize dungeon and return dungeon_struct *
+*  initialize dungeon and return dungeon_t *
 *  
 *******************************************************************************/
-dungeon_struct *create_dungeon(char *name, uint32_t num_zlevels, uint32_t size_x, uint32_t size_y)
+dungeon_t *create_dungeon(str_t name, uint32_t num_zlevels, uint32_t size_x, uint32_t size_y)
 {
-	dungeon_struct *dungeon = NULL;
+	dungeon_t *dungeon = NULL;
 	
-	dungeon = (dungeon_struct *)malloc(sizeof(dungeon_struct) + (num_zlevels * sizeof(dlevel_struct *)));
+	dungeon = (dungeon_t *)malloc(sizeof(dungeon_t) + (num_zlevels * sizeof(dlevel_t *)));
 	if (!dungeon) {
 		
 		printf("could not allocate memory for dungeon!\n");
@@ -55,10 +53,10 @@ dungeon_struct *create_dungeon(char *name, uint32_t num_zlevels, uint32_t size_x
 
 /*******************************************************************************
 *  
-*  take dungeon_struct * and free memory for members and self
+*  take dungeon_t * and free memory for members and self
 *  
 *******************************************************************************/
-bool destruct_dungeon(dungeon_struct *dungeon)
+bool destruct_dungeon(dungeon_t *dungeon)
 {
 	if (!dungeon) {
 		
@@ -83,14 +81,14 @@ bool destruct_dungeon(dungeon_struct *dungeon)
 
 /*******************************************************************************
 *  
-*  take zlevel and size and return dlevel_struct *
+*  take zlevel and size and return dlevel_t *
 *  
 *******************************************************************************/
-static dlevel_struct *create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y)
+static dlevel_t *create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y)
 {
-	dlevel_struct *dlevel = NULL;
+	dlevel_t *dlevel = NULL;
 	
-	dlevel = (dlevel_struct *)malloc(sizeof(dlevel_struct) + (size_x * size_y * sizeof(dtile_struct)));
+	dlevel = (dlevel_t *)malloc(sizeof(dlevel_t) + (size_x * size_y * sizeof(dtile_t)));
 	if (!dlevel) {
 		
 		printf("could not allocate memory for dlevel!\n");

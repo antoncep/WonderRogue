@@ -8,26 +8,23 @@
 *******************************************************************************/
 
 #include "engine.h"
-#include "vector2d.h"
 #include "dungeon.h"
 #include "player.h"
-#include <malloc.h>
-#include <ncurses.h>
 
-static bool init_game(engine_struct *, char *, char *);
-static bool render_screen(engine_struct *);
-static char handle_input(engine_struct *);
+static bool init_game(engine_t *, str_t, str_t);
+static bool render_screen(engine_t *);
+static char handle_input(engine_t *);
 
 /*******************************************************************************
 *  
-*  initialize engine and return engine_struct *
+*  initialize engine and return engine_t *
 *  
 *******************************************************************************/
-engine_struct *create_engine(void)
+engine_t *create_engine(void)
 {
-	engine_struct *engine = NULL;
+	engine_t *engine = NULL;
 	
-	engine = (engine_struct *)malloc(sizeof(engine_struct));
+	engine = (engine_t *)malloc(sizeof(engine_t));
 	if (!engine) {
 		
 		printf("could not allocate memory for engine!\n");
@@ -52,10 +49,10 @@ engine_struct *create_engine(void)
 
 /*******************************************************************************
 *  
-*  take engine_struct * and free memory for members and self
+*  take engine_t * and free memory for members and self
 *  
 *******************************************************************************/
-bool destruct_engine(engine_struct *engine)
+bool destruct_engine(engine_t *engine)
 {
 	if (!engine) {
 		
@@ -87,10 +84,10 @@ bool destruct_engine(engine_struct *engine)
 
 /*******************************************************************************
 *  
-*  take engine_struct * and initialize new dungeon for gameplay
+*  take engine_t * and initialize new dungeon for gameplay
 *  
 *******************************************************************************/
-static bool init_game(engine_struct *engine, char *dungeon_name, char *player_name)
+static bool init_game(engine_t *engine, str_t dungeon_name, str_t player_name)
 {
 	if (!engine) {
 		
@@ -127,10 +124,10 @@ static bool init_game(engine_struct *engine, char *dungeon_name, char *player_na
 
 /*******************************************************************************
 *  
-*  take engine_struct * and render chars to ncurses screen
+*  take engine_t * and render chars to ncurses screen
 *  
 *******************************************************************************/
-static bool render_screen(engine_struct *engine)
+static bool render_screen(engine_t *engine)
 {
 	if (!engine) {
 		
@@ -167,10 +164,10 @@ static bool render_screen(engine_struct *engine)
 
 /*******************************************************************************
 *  
-*  take engine_struct * and wait for key input and decide how to handle input
+*  take engine_t * and wait for key input and decide how to handle input
 *  
 *******************************************************************************/
-static char handle_input(engine_struct *engine)
+static char handle_input(engine_t *engine)
 {
 	if (!engine) {
 		
@@ -188,7 +185,7 @@ static char handle_input(engine_struct *engine)
 		return '\0';
 	}
 	
-	int32_t ch = getch();
+	int16_t ch = getch();
 	
 	switch (ch) {
 		

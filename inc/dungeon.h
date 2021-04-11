@@ -9,16 +9,12 @@
 *  
 *******************************************************************************/
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "vector2d.h"
+#include "engine.h"
 
 #define DNAM_LENGTH 24
 
-typedef struct vector2d_t vec2d_t;
-
-typedef enum dtile_symbol_t dtile_symbol_enum;
-enum dtile_symbol_t {
+typedef enum DungeonTileSymbol dtile_sym_t;
+enum DungeonTileSymbol {
 	
 	DSYM_EMPTY = ' ',
 	DSYM_FLOOR = '.',
@@ -26,26 +22,26 @@ enum dtile_symbol_t {
 	
 };
 
-typedef struct dtile_t dtile_struct;
-struct dtile_t {
+typedef struct DungeonTile dtile_t;
+struct DungeonTile {
 	
 	uint32_t bgcolor;
 	uint32_t fgcolor;
-	dtile_symbol_enum symbol;
+	dtile_sym_t symbol;
 	
 };
 
-typedef struct droom_t droom_struct;
-struct droom_t {
+typedef struct DungeonRoom droom_t;
+struct DungeonRoom {
 	
 	vec2d_t position;
 	vec2d_t size;
-	dtile_struct tiles[];
+	dtile_t tiles[];
 	
 };
 
-typedef enum dlevel_type_t dlevel_type_enum;
-enum dlevel_type_t {
+typedef enum DungeonLevelType dlevel_typ_t;
+enum DungeonLevelType {
 	
 	DLVL_SAFE,
 	DLVL_MONSTER,
@@ -53,36 +49,36 @@ enum dlevel_type_t {
 	
 };
 
-typedef struct dlevel_t dlevel_struct;
-struct dlevel_t {
+typedef struct DungeonLevel dlevel_t;
+struct DungeonLevel {
 	
 	uint32_t zlevel;
-	dlevel_type_enum type;
+	dlevel_typ_t type;
 	vec2d_t size;
-	dtile_struct tiles[];
+	dtile_t tiles[];
 	
 };
 
-typedef enum dungeon_type_t dungeon_type_enum;
-enum dungeon_type_t {
+typedef enum DungeonType dungeon_typ_t;
+enum DungeonType {
 	
 	DNGN_FINITE,
 	DNGN_INFINITE,
 	
 };
 
-typedef struct dungeon_t dungeon_struct;
-struct dungeon_t {
+typedef struct Dungeon dungeon_t;
+struct Dungeon {
 	
 	char name[DNAM_LENGTH];
-	dungeon_type_enum type;
+	dungeon_typ_t type;
 	uint32_t num_zlevels;
-	dlevel_struct *zlevels[];
+	dlevel_t *zlevels[];
 	
 };
 
-dungeon_struct *create_dungeon(char *, uint32_t, uint32_t, uint32_t);
-bool destruct_dungeon(dungeon_struct *);
+dungeon_t *create_dungeon(str_t, uint32_t, uint32_t, uint32_t);
+bool destruct_dungeon(dungeon_t *);
 
 /*******************************************************************************
 *  

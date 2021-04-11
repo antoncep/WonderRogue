@@ -8,8 +8,6 @@
 *******************************************************************************/
 
 #include "engine.h"
-#include <stdlib.h>
-#include <stdio.h>
 
 /*******************************************************************************
 *  
@@ -18,7 +16,7 @@
 *******************************************************************************/
 int main(int argc, char *argv[])
 {
-	engine_struct *engine = create_engine();
+	engine_t *engine = create_engine();
 	if (!engine) {
 		
 		printf("could not initialize engine!\n");

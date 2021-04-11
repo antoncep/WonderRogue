@@ -9,8 +9,8 @@
 *  
 *******************************************************************************/
 
-typedef struct vector2d_t vec2d_t;
-struct vector2d_t {
+typedef struct Vector2D vec2d_t;
+struct Vector2D {
 	
 	float x;
 	float y;

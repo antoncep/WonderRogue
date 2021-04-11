@@ -8,22 +8,19 @@
 *******************************************************************************/
 
 #include "player.h"
-#include "vector2d.h"
-#include <malloc.h>
-#include <string.h>
 
-static bool move_toward(player_struct *, vec2d_t);
+static bool move_toward(player_t *, vec2d_t);
 
 /*******************************************************************************
 *  
-*  initialize player and return player_struct *
+*  initialize player and return player_t *
 *  
 *******************************************************************************/
-player_struct *create_player(char *name, vec2d_t position)
+player_t *create_player(str_t name, vec2d_t position)
 {
-	player_struct *player = NULL;
+	player_t *player = NULL;
 	
-	player = (player_struct *)malloc(sizeof(player_struct));
+	player = (player_t *)malloc(sizeof(player_t));
 	if (!player) {
 		
 		printf("could not allocate memory for player!\n");
@@ -43,10 +40,10 @@ player_struct *create_player(char *name, vec2d_t position)
 
 /*******************************************************************************
 *  
-*  take player_struct * and free memory for members and self
+*  take player_t * and free memory for members and self
 *  
 *******************************************************************************/
-bool destruct_player(player_struct *player)
+bool destruct_player(player_t *player)
 {
 	if (!player) {
 		
@@ -62,10 +59,10 @@ bool destruct_player(player_struct *player)
 
 /*******************************************************************************
 *  
-*  take player_struct * and vec2d_t and update position
+*  take player_t * and vec2d_t and update position
 *  
 *******************************************************************************/
-static bool move_toward(player_struct *player, vec2d_t direction)
+static bool move_toward(player_t *player, vec2d_t direction)
 {
 	if (!player) {
 		
