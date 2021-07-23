@@ -11,32 +11,99 @@
 #include "dungeon.h"
 #include "player.h"
 
-static bool init_game(engine_t *, str_t, str_t);
-static bool render_screen(engine_t *);
-static char handle_input(engine_t *);
+struct Engine {
+	
+	dungeon_t* dungeon;
+	player_t* player;
+};
+
+static engine_t* engine_instance(void);
+static bool engine_init(engine_t**);
+static bool engine_stop(engine_t**);
+
+static bool initialise(engine_t*);
+static bool processing(engine_t*);
+
+static bool _render_system(engine_t*);
+static bool _input_system(engine_t*);
+static bool _event_system(engine_t*);
+static bool _physics_system(engine_t*);
+
+static bool _init_game(engine_t*, str_t, str_t);
 
 /*******************************************************************************
 *  
-*  initialize engine and return engine_t *
+*  
 *  
 *******************************************************************************/
-engine_t *create_engine(void)
+bool engine(engine_command_f command, engine_command_data_t data)
 {
-	engine_t *engine = NULL;
+	return command(engine_instance(), data);
+}
+
+/*******************************************************************************
+*  
+*  
+*  
+*******************************************************************************/
+bool engine_set_parameters(engine_t* engine, engine_command_data_t data)
+{
+	engine_params_t* engine_params = data;
 	
-	engine = (engine_t *)malloc(sizeof(engine_t));
-	if (!engine) {
+	fprintf(stderr, "window: %dx%d\n",
+		engine_params->window_width,
+		engine_params->window_height);
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  
+*  
+*******************************************************************************/
+bool engine_run_loop(engine_t* engine, engine_command_data_t data)
+{
+	if (!initialise(engine)) {
 		
-		printf("could not allocate memory for engine!\n");
-		return NULL;
+		fprintf(stderr, "could not initialise engine!\n");
+		return 1;
+	}
+	while(processing(engine));
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  get/create engine instance and return engine_t*
+*  
+*******************************************************************************/
+static engine_t* engine_instance(void)
+{
+	static engine_t* instance;
+	
+	if (!instance) engine_init(&instance);
+	
+	return instance;
+}
+
+/*******************************************************************************
+*  
+*  initialise new engine and return engine_t*
+*  
+*******************************************************************************/
+static bool engine_init(engine_t** engine)
+{
+	*engine = malloc(sizeof **engine);
+	if (!*engine) {
+		
+		fprintf(stderr, "could not allocate memory for engine!\n");
+		return false;
 	}
 	
-	engine->dungeon = NULL;
-	engine->player  = NULL;
-	
-	engine->init_game     = init_game;
-	engine->render_screen = render_screen;
-	engine->handle_input  = handle_input;
+	(*engine)->dungeon = NULL;
+	(*engine)->player = NULL;
 	
 	initscr();
 	cbreak();
@@ -44,104 +111,120 @@ engine_t *create_engine(void)
 	curs_set(FALSE);
 	keypad(stdscr, TRUE);
 	
-	return engine;
+	return true;
 }
 
 /*******************************************************************************
 *  
-*  take engine_t * and free memory for members and self
+*  take engine_t* and free memory for members and self
 *  
 *******************************************************************************/
-bool destruct_engine(engine_t *engine)
+static bool engine_stop(engine_t** engine)
 {
-	if (!engine) {
+	if (!*engine) {
 		
-		printf("invalid engine!\n");
+		fprintf(stderr, "invalid engine!\n");
 		return false;
 	}
 	
 	endwin();
 	
-	if (engine->dungeon && !destruct_dungeon(engine->dungeon)) {
+	if ((*engine)->dungeon && !destruct_dungeon((*engine)->dungeon)) {
 		
-		printf("could not destruct dungeon!\n");
+		fprintf(stderr, "could not destruct dungeon!\n");
 		return false;
 	}
-	engine->dungeon = NULL;
+	(*engine)->dungeon = NULL;
 	
-	if (engine->player && !destruct_player(engine->player)) {
+	if ((*engine)->player && !destruct_player((*engine)->player)) {
 		
-		printf("could not destruct player!\n");
+		fprintf(stderr, "could not destruct player!\n");
 		return false;
 	}
-	engine->player = NULL;
+	(*engine)->player = NULL;
 	
-	free(engine);
-	engine = NULL;
-	
-	return true;
-}
-
-/*******************************************************************************
-*  
-*  take engine_t * and initialize new dungeon for gameplay
-*  
-*******************************************************************************/
-static bool init_game(engine_t *engine, str_t dungeon_name, str_t player_name)
-{
-	if (!engine) {
-		
-		printf("invalid engine!\n");
-		return false;
-	}
-	
-	if (engine->dungeon && !destruct_dungeon(engine->dungeon)) {
-		
-		printf("could not destruct dungeon!\n");
-		return false;
-	}
-	engine->dungeon = create_dungeon(dungeon_name, 1, 350, 350);
-	if (!engine->dungeon) {
-		
-		printf("could not create dungeon!\n");
-		return false;
-	}
-	
-	if (engine->player && !destruct_player(engine->player)) {
-		
-		printf("could not destruct player!\n");
-		return false;
-	}
-	engine->player = create_player(player_name, (vec2d_t){ 0.0, 0.0 });
-	if (!engine->player) {
-		
-		printf("could not create player!\n");
-		return false;
-	}
+	free(*engine);
+	*engine = NULL;
 	
 	return true;
 }
 
 /*******************************************************************************
 *  
-*  take engine_t * and render chars to ncurses screen
+*  take engine_t* then load engine initial state and return bool
 *  
 *******************************************************************************/
-static bool render_screen(engine_t *engine)
+static bool initialise(engine_t* engine)
 {
 	if (!engine) {
 		
-		printf("invalid engine!\n");
+		fprintf(stderr, "invalid engine!\n");
 		return false;
 	}
+	
+	_init_game(engine, "Tomb of Bones", "Player");
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  take engine_t* then process engine tick and return bool
+*  
+*******************************************************************************/
+static bool processing(engine_t* engine)
+{
+	if (!engine) {
+		
+		fprintf(stderr, "invalid engine!\n");
+		return false;
+	}
+	
+	if (!_render_system(engine)) {
+		
+		fprintf(stderr, "error occured in render system\n");
+		return false;
+	}
+	if (!_input_system(engine)) {
+		
+		fprintf(stderr, "error occured in input system\n");
+		return false;
+	}
+	if (!_event_system(engine)) {
+		
+		fprintf(stderr, "error occured in event system\n");
+		return false;
+	}
+	if (!_physics_system(engine)) {
+		
+		fprintf(stderr, "error occured in physics system\n");
+		return false;
+	}
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  take engine_t* then process rendering and return bool
+*  
+*******************************************************************************/
+static bool _render_system(engine_t* engine)
+{
+	if (!engine) {
+		
+		fprintf(stderr, "invalid engine!\n");
+		return false;
+	}
+	
 	if (!engine->dungeon) {
 		
-		printf("invalid dungeon!\n");
+		fprintf(stderr, "invalid dungeon!\n");
 		return false;
 	}
 	if (!engine->player) {
 		
-		printf("invalid player!\n");
+		fprintf(stderr, "invalid player!\n");
 		return false;
 	}
 	
@@ -164,28 +247,34 @@ static bool render_screen(engine_t *engine)
 
 /*******************************************************************************
 *  
-*  take engine_t * and wait for key input and decide how to handle input
+*  take engine_t* then process input and return bool
 *  
 *******************************************************************************/
-static char handle_input(engine_t *engine)
+static bool _input_system(engine_t* engine)
 {
 	if (!engine) {
 		
-		printf("invalid engine!\n");
-		return '\0';
+		fprintf(stderr, "invalid engine!\n");
+		return false;
 	}
+	
 	if (!engine->dungeon) {
 		
-		printf("invalid dungeon!\n");
-		return '\0';
+		fprintf(stderr, "invalid dungeon!\n");
+		return false;
 	}
 	if (!engine->player) {
 		
-		printf("invalid player!\n");
-		return '\0';
+		fprintf(stderr, "invalid player!\n");
+		return false;
 	}
 	
 	int16_t ch = getch();
+	
+	if ((char)ch == 'q') {
+		
+		return false;
+	}
 	
 	switch (ch) {
 		
@@ -206,10 +295,80 @@ static char handle_input(engine_t *engine)
 			break;
 		
 		default:
-			printf("unhandled input!\n");
+			fprintf(stderr, "unhandled input!\n");
 	}
 	
-	return (char)ch;
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  take engine_t* then process events and return bool
+*  
+*******************************************************************************/
+static bool _event_system(engine_t* engine)
+{
+	if (!engine) {
+		
+		fprintf(stderr, "invalid engine!\n");
+		return false;
+	}
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  take engine_t* then process physics and return bool
+*  
+*******************************************************************************/
+static bool _physics_system(engine_t* engine)
+{
+	if (!engine) {
+		
+		fprintf(stderr, "invalid engine!\n");
+		return false;
+	}
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  take engine_t* and initialise new dungeon for gameplay
+*  
+*******************************************************************************/
+static bool _init_game(engine_t* engine, str_t dungeon_name, str_t player_name)
+{
+	if (!engine) {
+		
+		fprintf(stderr, "invalid engine!\n");
+		return false;
+	}
+	
+	if (engine->dungeon && !destruct_dungeon(engine->dungeon)) {
+		
+		fprintf(stderr, "could not destruct dungeon!\n");
+		return false;
+	}
+	engine->dungeon = create_dungeon(dungeon_name, 1, 350, 350);
+	if (!engine->dungeon) {
+		
+		fprintf(stderr, "could not create dungeon!\n");
+		return false;
+	}
+	
+	if (engine->player && !destruct_player(engine->player)) {
+		
+		fprintf(stderr, "could not destruct player!\n");
+		return false;
+	}
+	engine->player = create_player(player_name, (vec2d_t){ 0.0, 0.0 });
+	if (!engine->player) {
+		
+		fprintf(stderr, "could not create player!\n");
+		return false;
+	}
+	
+	return true;
 }
 
 /*******************************************************************************

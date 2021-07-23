@@ -12,10 +12,10 @@
 
 /*******************************************************************************
 *  
-*  take vec2d_t to normalize and return new vec2d_t
+*  take vec2d_t to normalise and return new vec2d_t
 *  
 *******************************************************************************/
-vec2d_t vector2d_normalize(vec2d_t vector_v)
+vec2d_t vector2d_normalise(vec2d_t vector_v)
 {
 	float length = sqrt(pow(vector_v.x, 2) + pow(vector_v.y, 2));
 	vector_v.x /= length;

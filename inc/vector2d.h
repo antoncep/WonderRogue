@@ -14,10 +14,9 @@ struct Vector2D {
 	
 	float x;
 	float y;
-	
 };
 
-vec2d_t vector2d_normalize(vec2d_t);
+vec2d_t vector2d_normalise(vec2d_t);
 vec2d_t vector2d_add(vec2d_t, vec2d_t);
 vec2d_t vector2d_sub(vec2d_t, vec2d_t);
 float vector2d_dot(vec2d_t, vec2d_t);

@@ -9,28 +9,27 @@
 
 #include "dungeon.h"
 
-static dlevel_t *create_dlevel(uint32_t, uint32_t, uint32_t);
+static dlevel_t* create_dlevel(uint32_t, uint32_t, uint32_t);
 
 /*******************************************************************************
 *  
-*  initialize dungeon and return dungeon_t *
+*  initialise dungeon and return dungeon_t*
 *  
 *******************************************************************************/
-dungeon_t *create_dungeon(str_t name, uint32_t num_zlevels, uint32_t size_x, uint32_t size_y)
+dungeon_t* create_dungeon(str_t name, uint32_t num_zlevels, uint32_t size_x, uint32_t size_y)
 {
-	dungeon_t *dungeon = NULL;
+	dungeon_t* dungeon = NULL;
 	
-	dungeon = (dungeon_t *)malloc(sizeof(dungeon_t) + (num_zlevels * sizeof(dlevel_t *)));
+	dungeon = (dungeon_t*)malloc(sizeof(dungeon_t) + (num_zlevels * sizeof(dlevel_t *)));
 	if (!dungeon) {
 		
-		printf("could not allocate memory for dungeon!\n");
+		fprintf(stderr, "could not allocate memory for dungeon!\n");
 		return NULL;
 	}
 	
 	strncpy(dungeon->name, name, DNAM_LENGTH);
 	dungeon->name[DNAM_LENGTH - 1] = '\0';
 	
-	dungeon->type        = (num_zlevels > 0) ? DNGN_FINITE : DNGN_INFINITE;
 	dungeon->num_zlevels = num_zlevels;
 	
 	for (uint32_t z = 0; z < dungeon->num_zlevels; z++) {
@@ -40,10 +39,10 @@ dungeon_t *create_dungeon(str_t name, uint32_t num_zlevels, uint32_t size_x, uin
 			
 			if (dungeon && !destruct_dungeon(dungeon)) {
 				
-				printf("could not destruct dungeon!\n");
+				fprintf(stderr, "could not destruct dungeon!\n");
 				return false;
 			}
-			printf("could not create dlevel!\n");
+			fprintf(stderr, "could not create dlevel!\n");
 			return NULL;
 		}
 	}
@@ -53,14 +52,14 @@ dungeon_t *create_dungeon(str_t name, uint32_t num_zlevels, uint32_t size_x, uin
 
 /*******************************************************************************
 *  
-*  take dungeon_t * and free memory for members and self
+*  take dungeon_t* and free memory for members and self
 *  
 *******************************************************************************/
-bool destruct_dungeon(dungeon_t *dungeon)
+bool destruct_dungeon(dungeon_t* dungeon)
 {
 	if (!dungeon) {
 		
-		printf("invalid dungeon!\n");
+		fprintf(stderr, "invalid dungeon!\n");
 		return false;
 	}
 	
@@ -81,17 +80,17 @@ bool destruct_dungeon(dungeon_t *dungeon)
 
 /*******************************************************************************
 *  
-*  take zlevel and size and return dlevel_t *
+*  take zlevel and size and return dlevel_t*
 *  
 *******************************************************************************/
-static dlevel_t *create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y)
+static dlevel_t* create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y)
 {
-	dlevel_t *dlevel = NULL;
+	dlevel_t* dlevel = NULL;
 	
-	dlevel = (dlevel_t *)malloc(sizeof(dlevel_t) + (size_x * size_y * sizeof(dtile_t)));
+	dlevel = (dlevel_t*)malloc(sizeof(dlevel_t) + (size_x * size_y * sizeof(dtile_t)));
 	if (!dlevel) {
 		
-		printf("could not allocate memory for dlevel!\n");
+		fprintf(stderr, "could not allocate memory for dlevel!\n");
 		return NULL;
 	}
 	
@@ -104,8 +103,8 @@ static dlevel_t *create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y
 		for (uint32_t tile_x = 0; tile_x < dlevel->size.x; tile_x++) {
 			
 			idx = (tile_y * dlevel->size.y) + tile_x;
-			dlevel->tiles[idx].bgcolor = 0x000000;
-			dlevel->tiles[idx].fgcolor = 0xFFFFFF;
+			dlevel->tiles[idx].bgcolour = 0x000000;
+			dlevel->tiles[idx].fgcolour = 0xFFFFFF;
 			dlevel->tiles[idx].symbol = DSYM_FLOOR;
 		}
 	}

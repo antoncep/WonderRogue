@@ -17,7 +17,6 @@ typedef enum PlayerSymbol player_sym_t;
 enum PlayerSymbol {
 	
 	PSYM_NORMAL = '@',
-	
 };
 
 typedef struct Player player_t;
@@ -27,12 +26,11 @@ struct Player {
 	player_sym_t symbol;
 	vec2d_t position;
 	
-	bool (*move_toward)(player_t *, vec2d_t);
-	
+	bool (*move_toward)(player_t*, vec2d_t);
 };
 
-player_t *create_player(str_t, vec2d_t);
-bool destruct_player(player_t *);
+player_t* create_player(str_t, vec2d_t);
+bool destruct_player(player_t*);
 
 /*******************************************************************************
 *  

@@ -19,16 +19,14 @@ enum DungeonTileSymbol {
 	DSYM_EMPTY = ' ',
 	DSYM_FLOOR = '.',
 	DSYM_WALL  = '#',
-	
 };
 
 typedef struct DungeonTile dtile_t;
 struct DungeonTile {
 	
-	uint32_t bgcolor;
-	uint32_t fgcolor;
 	dtile_sym_t symbol;
-	
+	uint32_t bgcolour;
+	uint32_t fgcolour;
 };
 
 typedef struct DungeonRoom droom_t;
@@ -36,8 +34,6 @@ struct DungeonRoom {
 	
 	vec2d_t position;
 	vec2d_t size;
-	dtile_t tiles[];
-	
 };
 
 typedef enum DungeonLevelType dlevel_typ_t;
@@ -46,7 +42,6 @@ enum DungeonLevelType {
 	DLVL_SAFE,
 	DLVL_MONSTER,
 	DLVL_BOSS,
-	
 };
 
 typedef struct DungeonLevel dlevel_t;
@@ -56,29 +51,19 @@ struct DungeonLevel {
 	dlevel_typ_t type;
 	vec2d_t size;
 	dtile_t tiles[];
-	
-};
-
-typedef enum DungeonType dungeon_typ_t;
-enum DungeonType {
-	
-	DNGN_FINITE,
-	DNGN_INFINITE,
-	
 };
 
 typedef struct Dungeon dungeon_t;
 struct Dungeon {
 	
 	char name[DNAM_LENGTH];
-	dungeon_typ_t type;
 	uint32_t num_zlevels;
-	dlevel_t *zlevels[];
-	
+	uint32_t cur_zlevel;
+	dlevel_t* zlevels[];
 };
 
-dungeon_t *create_dungeon(str_t, uint32_t, uint32_t, uint32_t);
-bool destruct_dungeon(dungeon_t *);
+dungeon_t* create_dungeon(str_t, uint32_t, uint32_t, uint32_t);
+bool destruct_dungeon(dungeon_t*);
 
 /*******************************************************************************
 *  

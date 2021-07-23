@@ -20,25 +20,22 @@
 #include "vector2d.h"
 #include "utilities.h"
 
-typedef char * str_t;
-
-typedef struct Dungeon dungeon_t;
-typedef struct Player player_t;
+typedef char* str_t;
 
 typedef struct Engine engine_t;
-struct Engine {
+typedef struct EngineParams engine_params_t;
+struct EngineParams {
 	
-	dungeon_t *dungeon;
-	player_t *player;
-	
-	bool (*init_game)(engine_t *, str_t, str_t);
-	bool (*render_screen)(engine_t *);
-	char (*handle_input)(engine_t *);
-	
+	int window_width;
+	int window_height;
 };
 
-engine_t *create_engine(void);
-bool destruct_engine(engine_t *);
+typedef void* engine_command_data_t;
+typedef bool (*engine_command_f)(engine_t*, engine_command_data_t);
+
+bool engine(engine_command_f, engine_command_data_t);
+bool engine_set_parameters(engine_t*, engine_command_data_t);
+bool engine_run_loop(engine_t*, engine_command_data_t);
 
 /*******************************************************************************
 *  

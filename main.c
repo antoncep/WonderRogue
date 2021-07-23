@@ -14,25 +14,23 @@
 *  program entry point
 *  
 *******************************************************************************/
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	engine_t *engine = create_engine();
-	if (!engine) {
+	engine_params_t engine_params = {0};
+	
+	engine_params.window_width = 1920;
+	engine_params.window_height = 1080;
+	
+	if (!engine(engine_set_parameters, &engine_params)) {
 		
-		printf("could not initialize engine!\n");
-		return -1;
+		fprintf(stderr, "could not set parameters!\n");
+		return 1;
 	}
 	
-	engine->init_game(engine, "Tomb of Bones", "Player");
-	do {
-		engine->render_screen(engine);
+	if (!engine(engine_run_loop, NULL)) {
 		
-	} while(engine->handle_input(engine) != 'q');
-	
-	if (engine && !destruct_engine(engine)) {
-		
-		printf("could not stop engine!\n");
-		return -1;
+		fprintf(stderr, "could not execute run loop!\n");
+		return 1;
 	}
 	
 	return 0;

@@ -9,21 +9,21 @@
 
 #include "player.h"
 
-static bool move_toward(player_t *, vec2d_t);
+static bool move_toward(player_t*, vec2d_t);
 
 /*******************************************************************************
 *  
-*  initialize player and return player_t *
+*  initialise player and return player_t*
 *  
 *******************************************************************************/
-player_t *create_player(str_t name, vec2d_t position)
+player_t* create_player(str_t name, vec2d_t position)
 {
-	player_t *player = NULL;
+	player_t* player = NULL;
 	
-	player = (player_t *)malloc(sizeof(player_t));
+	player = (player_t*)malloc(sizeof(player_t));
 	if (!player) {
 		
-		printf("could not allocate memory for player!\n");
+		fprintf(stderr, "could not allocate memory for player!\n");
 		return NULL;
 	}
 	
@@ -40,14 +40,14 @@ player_t *create_player(str_t name, vec2d_t position)
 
 /*******************************************************************************
 *  
-*  take player_t * and free memory for members and self
+*  take player_t* and free memory for members and self
 *  
 *******************************************************************************/
-bool destruct_player(player_t *player)
+bool destruct_player(player_t* player)
 {
 	if (!player) {
 		
-		printf("invalid player!\n");
+		fprintf(stderr, "invalid player!\n");
 		return false;
 	}
 	
@@ -59,18 +59,18 @@ bool destruct_player(player_t *player)
 
 /*******************************************************************************
 *  
-*  take player_t * and vec2d_t and update position
+*  take player_t* and vec2d_t and update position
 *  
 *******************************************************************************/
-static bool move_toward(player_t *player, vec2d_t direction)
+static bool move_toward(player_t* player, vec2d_t direction)
 {
 	if (!player) {
 		
-		printf("invalid player!\n");
+		fprintf(stderr, "invalid player!\n");
 		return false;
 	}
 	
-	direction = vector2d_normalize(direction);
+	direction = vector2d_normalise(direction);
 	
 	player->position = vector2d_add(player->position, direction);
 	

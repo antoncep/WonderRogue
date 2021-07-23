@@ -14,7 +14,7 @@
 *  take char string and return calculated hash value
 *  
 *******************************************************************************/
-uint32_t strhash(char *string)
+uint32_t strhash(char* string)
 {
 	uint32_t hash = 17;
 	int32_t index = 0;
