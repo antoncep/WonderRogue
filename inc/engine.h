@@ -22,7 +22,6 @@
 
 typedef char* str_t;
 
-typedef struct Engine engine_t;
 typedef struct EngineParams engine_params_t;
 struct EngineParams {
 	
@@ -30,12 +29,14 @@ struct EngineParams {
 	int window_height;
 };
 
-typedef void* engine_command_data_t;
-typedef bool (*engine_command_f)(engine_t*, engine_command_data_t);
+typedef struct Engine engine_t;
 
-bool engine(engine_command_f, engine_command_data_t);
-bool engine_set_parameters(engine_t*, engine_command_data_t);
-bool engine_run_loop(engine_t*, engine_command_data_t);
+engine_t* ngn(bool(*)(engine_t**));
+bool engine_create(engine_t**);
+bool engine_delete(engine_t**);
+
+bool engine_params_set(engine_t*, engine_params_t*);
+bool engine_run_state_cycle(engine_t*);
 
 /*******************************************************************************
 *  
