@@ -11,9 +11,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
+#include <time.h>
 #include <malloc.h>
 #include <ncurses.h>
 
@@ -22,21 +23,40 @@
 
 typedef char* str_t;
 
+typedef struct Engine engine_t;
+
 typedef struct EngineParams engine_params_t;
 struct EngineParams {
 	
-	int window_width;
-	int window_height;
+	uint16_t window_width;
+	uint16_t window_height;
+	uint16_t refresh_rate;
 };
 
-typedef struct Engine engine_t;
+typedef struct EngineMetrics engine_metrics_t;
+struct EngineMetrics {
+	
+	clock_t ticks_s;
+	clock_t ticks_e;
+	clock_t ticks_d;
+	clock_t ticks_since_frame;
+	float ticks_per_frame;
+	uint16_t frames;
+};
+
+typedef struct EngineState engine_state_t;
+struct EngineState {
+	
+	bool (*process_faster_pipeline)(engine_t*);
+	bool (*process_stable_pipeline)(engine_t*);
+};
 
 engine_t* ngn(bool(*)(engine_t**));
 bool engine_create(engine_t**);
 bool engine_delete(engine_t**);
 
 bool engine_params_set(engine_t*, engine_params_t*);
-bool engine_run_state_cycle(engine_t*);
+bool process_start(engine_t*);
 
 /*******************************************************************************
 *  

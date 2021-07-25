@@ -20,6 +20,7 @@ int main(int argc, char* argv[])
 	
 	params.window_width = 1920;
 	params.window_height = 1080;
+	params.refresh_rate = 60;
 	
 	ngn(engine_create);
 	
@@ -29,7 +30,7 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 	
-	if (!engine_run_state_cycle(ngn(0))) {
+	if (!process_start(ngn(0))) {
 		
 		fprintf(stderr, "could not execute run loop!\n");
 		return 1;

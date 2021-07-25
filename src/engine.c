@@ -13,11 +13,13 @@
 struct Engine {
 	
 	engine_params_t params;
+	engine_metrics_t metrics;
+	engine_state_t state;
 	scene_t scene;
 };
 
-static bool initialise(engine_t*);
-static bool processing(engine_t*);
+static bool process_faster_pipeline(engine_t*);
+static bool process_stable_pipeline(engine_t*);
 
 static bool _render_system(engine_t*);
 static bool _input_system(engine_t*);
@@ -122,7 +124,7 @@ bool engine_params_set(engine_t* engine, engine_params_t* engine_params)
 *  function
 *  
 *******************************************************************************/
-bool engine_run_state_cycle(engine_t* engine)
+bool process_start(engine_t* engine)
 {
 	if (!engine) {
 		
@@ -135,13 +137,43 @@ bool engine_run_state_cycle(engine_t* engine)
 	noecho();
 	curs_set(FALSE);
 	keypad(stdscr, TRUE);
+	timeout(0);
 	
-	if (!initialise(engine)) {
+	if (!scene_init(&engine->scene)) {
 		
-		fprintf(stderr, "could not initialise engine!\n");
-		return 1;
+		fprintf(stderr, "could not initialise scene!\n");
+		return false;
 	}
-	while(processing(engine));
+	
+	engine->state.process_faster_pipeline = process_faster_pipeline;
+	engine->state.process_stable_pipeline = process_stable_pipeline;
+	
+	engine->metrics.ticks_per_frame = ((float)CLOCKS_PER_SEC / engine->params.refresh_rate);
+	
+	bool active = true;
+	while(active) {
+		
+		engine->metrics.ticks_s = engine->metrics.ticks_e;
+		engine->metrics.ticks_e = clock();
+		engine->metrics.ticks_d = engine->metrics.ticks_e - engine->metrics.ticks_s;
+		
+		if ((active = active && engine->state.process_faster_pipeline(engine))) {
+			
+			engine->metrics.ticks_since_frame += engine->metrics.ticks_d;
+			
+			if (engine->metrics.ticks_since_frame >= engine->metrics.ticks_per_frame) {
+				
+				engine->metrics.frames += 1;
+				if (engine->metrics.frames >= engine->params.refresh_rate) {
+					
+					engine->metrics.frames = 0;
+				}
+				engine->metrics.ticks_since_frame = 0;
+				
+				active = active && engine->state.process_stable_pipeline(engine);
+			}
+		}
+	}
 	
 	endwin();
 	
@@ -153,41 +185,8 @@ bool engine_run_state_cycle(engine_t* engine)
 *  function
 *  
 *******************************************************************************/
-static bool initialise(engine_t* engine)
+static bool process_faster_pipeline(engine_t* engine)
 {
-	if (!engine) {
-		
-		fprintf(stderr, "invalid engine!\n");
-		return false;
-	}
-	
-	if (!scene_init(&engine->scene)) {
-		
-		fprintf(stderr, "could not initialise scene!\n");
-		return false;
-	}
-	
-	return true;
-}
-
-/*******************************************************************************
-*  
-*  function
-*  
-*******************************************************************************/
-static bool processing(engine_t* engine)
-{
-	if (!engine) {
-		
-		fprintf(stderr, "invalid engine!\n");
-		return false;
-	}
-	
-	if (!_render_system(engine)) {
-		
-		fprintf(stderr, "error occured in render system\n");
-		return false;
-	}
 	if (!_input_system(engine)) {
 		
 		fprintf(stderr, "error occured in input system\n");
@@ -198,12 +197,26 @@ static bool processing(engine_t* engine)
 		fprintf(stderr, "error occured in event system\n");
 		return false;
 	}
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  function
+*  
+*******************************************************************************/
+static bool process_stable_pipeline(engine_t* engine)
+{
 	if (!_physics_system(engine)) {
 		
 		fprintf(stderr, "error occured in physics system\n");
 		return false;
 	}
-	
+	if (!_render_system(engine)) {
+		
+		fprintf(stderr, "error occured in render system\n");
+		return false;
+	}
 	return true;
 }
 
@@ -228,6 +241,19 @@ static bool _render_system(engine_t* engine)
 		return false;
 	}
 	
+	char str[50];
+	
+	sprintf(str, "metrics.ticks_s: %ld\n", engine->metrics.ticks_s);
+	mvaddnstr(0, 0, str, 30);
+	sprintf(str, "metrics.ticks_e: %ld\n", engine->metrics.ticks_e);
+	mvaddnstr(1, 0, str, 30);
+	sprintf(str, "metrics.ticks_d: %ld\n", engine->metrics.ticks_d);
+	mvaddnstr(2, 0, str, 30);
+	sprintf(str, "metrics.ticks_since_frame: %ld\n", engine->metrics.ticks_since_frame);
+	mvaddnstr(3, 0, str, 30);
+	sprintf(str, "metrics.frames: %d\n", engine->metrics.frames);
+	mvaddnstr(4, 0, str, 30);
+	
 	refresh();
 	
 	return true;
@@ -247,6 +273,10 @@ static bool _input_system(engine_t* engine)
 	}
 	
 	int16_t ch = getch();
+	if (ch == -1) {
+		
+		return true;
+	}
 	
 	if ((char)ch == 'q') {
 		

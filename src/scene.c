@@ -83,7 +83,7 @@ bool scene_init(scene_t* scene)
 		fprintf(stderr, "could not destruct player!\n");
 		return false;
 	}
-	scene->player = create_player("player_name", (vec2d_t){ 0.0, 0.0 });
+	scene->player = create_player("player_name", (vec2d_t){ 7, 7 });
 	if (!scene->player) {
 		
 		fprintf(stderr, "could not create player!\n");
