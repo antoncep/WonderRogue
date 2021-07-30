@@ -9,7 +9,9 @@
 *  
 *******************************************************************************/
 
-#include "engine.h"
+#include <stdint.h>
+#include <stdbool.h>
+#include "vector2d.h"
 
 #define PNAM_LENGTH 24
 
@@ -20,17 +22,13 @@ enum PlayerSymbol {
 };
 
 typedef struct Player player_t;
-struct Player {
-	
-	char name[PNAM_LENGTH];
-	player_sym_t symbol;
-	vec2d_t position;
-	
-	bool (*move_toward)(player_t*, vec2d_t);
-};
 
-player_t* create_player(str_t, vec2d_t);
-bool destruct_player(player_t*);
+bool player_create(player_t**, char*, vec2d_t);
+bool player_delete(player_t**);
+
+bool player_render(player_t*, bool(*)(int,int,char));
+
+bool player_move_toward(player_t*, vec2d_t);
 
 /*******************************************************************************
 *  

@@ -7,39 +7,60 @@
 *  
 *******************************************************************************/
 
+#include <stdio.h>
+#include <string.h>
+#include <malloc.h>
 #include "dungeon.h"
+
+struct Dungeon {
+	
+	char name[DNAM_LENGTH];
+	uint32_t num_zlevels;
+	uint32_t cur_zlevel;
+	dlevel_t* zlevels[];
+};
 
 static dlevel_t* create_dlevel(uint32_t, uint32_t, uint32_t);
 
 /*******************************************************************************
 *  
-*  initialise dungeon and return dungeon_t*
+*  function
 *  
 *******************************************************************************/
-dungeon_t* create_dungeon(str_t name, uint32_t num_zlevels, uint32_t size_x, uint32_t size_y)
+bool dungeon_create(dungeon_t** dungeon, char* name, uint32_t num_zlevels, uint32_t size_x, uint32_t size_y)
 {
-	dungeon_t* dungeon = NULL;
-	
-	dungeon = (dungeon_t*)malloc(sizeof(dungeon_t) + (num_zlevels * sizeof(dlevel_t *)));
-	if (!dungeon) {
+	if (*dungeon) {
 		
-		fprintf(stderr, "could not allocate memory for dungeon!\n");
-		return NULL;
+		fprintf(stderr, "invalid handle!\n");
+		return 0;
 	}
 	
-	strncpy(dungeon->name, name, DNAM_LENGTH);
-	dungeon->name[DNAM_LENGTH - 1] = '\0';
-	
-	dungeon->num_zlevels = num_zlevels;
-	
-	for (uint32_t z = 0; z < dungeon->num_zlevels; z++) {
+	*dungeon = malloc(sizeof **dungeon);
+	if (!*dungeon) {
 		
-		dungeon->zlevels[z] = create_dlevel(z, size_x, size_y);
-		if (!dungeon->zlevels[z]) {
+		fprintf(stderr, "could not allocate memory for dungeon!\n");
+		return false;
+	}
+	
+	if (!memset(*dungeon, 0, sizeof **dungeon)) {
+		
+		fprintf(stderr, "could not initialise memory for dungeon!\n");
+		return false;
+	}
+	
+	strncpy((*dungeon)->name, name, DNAM_LENGTH);
+	(*dungeon)->name[DNAM_LENGTH - 1] = '\0';
+	
+	(*dungeon)->num_zlevels = num_zlevels;
+	
+	for (uint32_t z = 0; z < (*dungeon)->num_zlevels; z++) {
+		
+		(*dungeon)->zlevels[z] = create_dlevel(z, size_x, size_y);
+		if (!(*dungeon)->zlevels[z]) {
 			
-			if (dungeon && !destruct_dungeon(dungeon)) {
+			if ((*dungeon) && !dungeon_delete(dungeon)) {
 				
-				fprintf(stderr, "could not destruct dungeon!\n");
+				fprintf(stderr, "could not delete dungeon!\n");
 				return false;
 			}
 			fprintf(stderr, "could not create dlevel!\n");
@@ -47,40 +68,62 @@ dungeon_t* create_dungeon(str_t name, uint32_t num_zlevels, uint32_t size_x, uin
 		}
 	}
 	
-	return dungeon;
+	return true;
 }
 
 /*******************************************************************************
 *  
-*  take dungeon_t* and free memory for members and self
+*  function
 *  
 *******************************************************************************/
-bool destruct_dungeon(dungeon_t* dungeon)
+bool dungeon_delete(dungeon_t** dungeon)
 {
-	if (!dungeon) {
+	if (!*dungeon) {
 		
-		fprintf(stderr, "invalid dungeon!\n");
-		return false;
+		fprintf(stderr, "invalid handle!\n");
+		return 0;
 	}
 	
-	for (uint32_t z = dungeon->num_zlevels - 1; z < dungeon->num_zlevels; z--) {
+	for (uint32_t z = (*dungeon)->num_zlevels - 1; z < (*dungeon)->num_zlevels; z--) {
 		
-		if (dungeon->zlevels[z]) {
+		if ((*dungeon)->zlevels[z]) {
 			
-			free(dungeon->zlevels[z]);
-			dungeon->zlevels[z] = NULL;
+			free((*dungeon)->zlevels[z]);
+			(*dungeon)->zlevels[z] = NULL;
 		}
 	}
 	
-	free(dungeon);
-	dungeon = NULL;
+	free(*dungeon);
+	*dungeon = 0;
 	
 	return true;
 }
 
 /*******************************************************************************
 *  
-*  take zlevel and size and return dlevel_t*
+*  function
+*  
+*******************************************************************************/
+bool dungeon_render(dungeon_t* dungeon, bool(*draw)(int,int,char), int max_x, int max_y)
+{
+	if (!dungeon) {
+		
+		fprintf(stderr, "invalid handle!\n");
+		return 0;
+	}
+	
+	for (int32_t map_y = 0; map_y < max_y; map_y++) {
+		for (int32_t map_x = 0; map_x < max_x; map_x++) {
+			draw(map_x, map_y, (*dungeon->zlevels[0]).tiles[(map_y * max_x) + map_x].symbol);
+		}
+	}
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  function
 *  
 *******************************************************************************/
 static dlevel_t* create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y)

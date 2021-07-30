@@ -7,43 +7,78 @@
 *  
 *******************************************************************************/
 
+#include <stdio.h>
+#include <string.h>
+#include <malloc.h>
 #include "player.h"
 
-static bool move_toward(player_t*, vec2d_t);
+struct Player {
+	
+	char name[PNAM_LENGTH];
+	player_sym_t symbol;
+	vec2d_t position;
+};
 
 /*******************************************************************************
 *  
-*  initialise player and return player_t*
+*  function
 *  
 *******************************************************************************/
-player_t* create_player(str_t name, vec2d_t position)
+bool player_create(player_t** player, char* name, vec2d_t position)
 {
-	player_t* player = NULL;
-	
-	player = (player_t*)malloc(sizeof(player_t));
-	if (!player) {
+	if (*player) {
 		
-		fprintf(stderr, "could not allocate memory for player!\n");
-		return NULL;
+		fprintf(stderr, "invalid handle!\n");
+		return 0;
 	}
 	
-	strncpy(player->name, name, PNAM_LENGTH);
-	player->name[PNAM_LENGTH - 1] = '\0';
+	*player = malloc(sizeof **player);
+	if (!*player) {
+		
+		fprintf(stderr, "could not allocate memory for player!\n");
+		return false;
+	}
 	
-	player->symbol   = PSYM_NORMAL;
-	player->position = position;
+	if (!memset(*player, 0, sizeof **player)) {
+		
+		fprintf(stderr, "could not initialise memory for player!\n");
+		return false;
+	}
 	
-	player->move_toward = move_toward;
+	strncpy((*player)->name, name, PNAM_LENGTH);
+	(*player)->name[PNAM_LENGTH - 1] = '\0';
 	
-	return player;
+	(*player)->symbol   = PSYM_NORMAL;
+	(*player)->position = position;
+	
+	return true;
 }
 
 /*******************************************************************************
 *  
-*  take player_t* and free memory for members and self
+*  function
 *  
 *******************************************************************************/
-bool destruct_player(player_t* player)
+bool player_delete(player_t** player)
+{
+	if (!*player) {
+		
+		fprintf(stderr, "invalid handle!\n");
+		return 0;
+	}
+	
+	free(*player);
+	*player = 0;
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  function
+*  
+*******************************************************************************/
+bool player_render(player_t* player, bool(*draw)(int,int,char))
 {
 	if (!player) {
 		
@@ -51,18 +86,17 @@ bool destruct_player(player_t* player)
 		return false;
 	}
 	
-	free(player);
-	player = NULL;
+	draw(player->position.x, player->position.y, player->symbol);
 	
 	return true;
 }
 
 /*******************************************************************************
 *  
-*  take player_t* and vec2d_t and update position
+*  function
 *  
 *******************************************************************************/
-static bool move_toward(player_t* player, vec2d_t direction)
+bool player_move_toward(player_t* player, vec2d_t direction)
 {
 	if (!player) {
 		

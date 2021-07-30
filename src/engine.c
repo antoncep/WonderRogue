@@ -7,15 +7,17 @@
 *  
 *******************************************************************************/
 
-#include "engine.h"
+#include "stopwatch.h"
 #include "scene.h"
+#include "engine.h"
 
 struct Engine {
 	
-	engine_params_t params;
+	stopwatch_t* stopwatch;
 	engine_metrics_t metrics;
+	engine_params_t params;
 	engine_state_t state;
-	scene_t scene;
+	scene_t* scene;
 };
 
 static bool process_faster_pipeline(engine_t*);
@@ -31,41 +33,36 @@ static bool _physics_system(engine_t*);
 *  function
 *  
 *******************************************************************************/
-engine_t* ngn(bool(*action)(engine_t**))
+bool engine_create(engine_t** engine)
 {
-	static engine_t* instance;
-	
-	if (action ? !action(&instance) : false) {
+	if (*engine) {
 		
-		fprintf(stderr, "engine action failed!\n");
+		fprintf(stderr, "invalid handle!\n");
+		return 0;
 	}
 	
-	return instance;
-}
-
-/*******************************************************************************
-*  
-*  function
-*  
-*******************************************************************************/
-bool engine_create(engine_t** instance)
-{
-	if (*instance) {
-		
-		fprintf(stderr, "engine instance already exists!\n");
-		return false;
-	}
-	
-	*instance = malloc(sizeof **instance);
-	if (!*instance) {
+	*engine = malloc(sizeof **engine);
+	if (!*engine) {
 		
 		fprintf(stderr, "could not allocate memory for engine!\n");
 		return false;
 	}
 	
-	if (!memset(*instance, 0, sizeof **instance)) {
+	if (!memset(*engine, 0, sizeof **engine)) {
 		
 		fprintf(stderr, "could not initialise memory for engine!\n");
+		return false;
+	}
+	
+	if (!stopwatch_create(&(*engine)->stopwatch)) {
+		
+		fprintf(stderr, "could not create stopwatch!\n");
+		return false;
+	}
+	
+	if (!scene_create(&(*engine)->scene)) {
+		
+		fprintf(stderr, "could not create scene!\n");
 		return false;
 	}
 	
@@ -77,22 +74,28 @@ bool engine_create(engine_t** instance)
 *  function
 *  
 *******************************************************************************/
-bool engine_delete(engine_t** instance)
+bool engine_delete(engine_t** engine)
 {
-	if (!*instance) {
+	if (!*engine) {
 		
-		fprintf(stderr, "engine instance is invalid!\n");
-		return false;
+		fprintf(stderr, "invalid handle!\n");
+		return 0;
 	}
 	
-	if (!scene_delete(&(*instance)->scene)) {
+	if ((*engine)->scene && !scene_delete(&(*engine)->scene)) {
 		
 		fprintf(stderr, "could not delete scene!\n");
 		return false;
 	}
 	
-	free(*instance);
-	*instance = 0;
+	if ((*engine)->stopwatch && !stopwatch_delete(&(*engine)->stopwatch)) {
+		
+		fprintf(stderr, "could not delete stopwatch!\n");
+		return false;
+	}
+	
+	free(*engine);
+	*engine = 0;
 	
 	return true;
 }
@@ -124,7 +127,7 @@ bool engine_params_set(engine_t* engine, engine_params_t* engine_params)
 *  function
 *  
 *******************************************************************************/
-bool process_start(engine_t* engine)
+bool engine_state_loop(engine_t* engine)
 {
 	if (!engine) {
 		
@@ -137,9 +140,9 @@ bool process_start(engine_t* engine)
 	noecho();
 	curs_set(FALSE);
 	keypad(stdscr, TRUE);
-	timeout(0);
+	timeout(25);
 	
-	if (!scene_init(&engine->scene)) {
+	if (!scene_init(engine->scene)) {
 		
 		fprintf(stderr, "could not initialise scene!\n");
 		return false;
@@ -148,30 +151,39 @@ bool process_start(engine_t* engine)
 	engine->state.process_faster_pipeline = process_faster_pipeline;
 	engine->state.process_stable_pipeline = process_stable_pipeline;
 	
-	engine->metrics.ticks_per_frame = ((float)CLOCKS_PER_SEC / engine->params.refresh_rate);
+	engine->metrics.ticks_per_second = NANOSECS_IN_SECOND;
+	engine->metrics.ticks_per_frame = engine->metrics.ticks_per_second / engine->params.refresh_rate;
 	
-	bool active = true;
-	while(active) {
+	stopwatch_start(engine->stopwatch);
+	while (stopwatch_stamp(engine->stopwatch)) {
 		
-		engine->metrics.ticks_s = engine->metrics.ticks_e;
-		engine->metrics.ticks_e = clock();
-		engine->metrics.ticks_d = engine->metrics.ticks_e - engine->metrics.ticks_s;
+		if (!engine->state.process_faster_pipeline(engine)) {
+			
+			fprintf(stderr, "faster pipeline break!\n");
+			break;
+		}
 		
-		if ((active = active && engine->state.process_faster_pipeline(engine))) {
+		engine->metrics.ticks_since_frame += stopwatch_delta(engine->stopwatch);
+		if (engine->metrics.ticks_since_frame >= engine->metrics.ticks_per_frame) {
 			
-			engine->metrics.ticks_since_frame += engine->metrics.ticks_d;
+			engine->metrics.total_frames += 1;
+			engine->metrics.ticks_since_frame = engine->metrics.ticks_since_frame % engine->metrics.ticks_per_frame;
 			
-			if (engine->metrics.ticks_since_frame >= engine->metrics.ticks_per_frame) {
+			if (!engine->state.process_stable_pipeline(engine)) {
 				
-				engine->metrics.frames += 1;
-				if (engine->metrics.frames >= engine->params.refresh_rate) {
-					
-					engine->metrics.frames = 0;
-				}
-				engine->metrics.ticks_since_frame = 0;
-				
-				active = active && engine->state.process_stable_pipeline(engine);
+				fprintf(stderr, "stable pipeline break!\n");
+				break;
 			}
+		}
+		
+		engine->metrics.ticks_since_second += stopwatch_delta(engine->stopwatch);
+		if (engine->metrics.ticks_since_second >= engine->metrics.ticks_per_second) {
+			
+			engine->metrics.total_seconds += engine->metrics.ticks_since_second / engine->metrics.ticks_per_second;
+			engine->metrics.ticks_since_second = engine->metrics.ticks_since_second % engine->metrics.ticks_per_second;
+			
+			engine->metrics.frames_per_second = engine->metrics.total_frames;
+			engine->metrics.total_frames = 0;
 		}
 	}
 	
@@ -187,16 +199,24 @@ bool process_start(engine_t* engine)
 *******************************************************************************/
 static bool process_faster_pipeline(engine_t* engine)
 {
+	if (!engine) {
+		
+		fprintf(stderr, "invalid engine!\n");
+		return false;
+	}
+	
 	if (!_input_system(engine)) {
 		
 		fprintf(stderr, "error occured in input system\n");
 		return false;
 	}
+	
 	if (!_event_system(engine)) {
 		
 		fprintf(stderr, "error occured in event system\n");
 		return false;
 	}
+	
 	return true;
 }
 
@@ -207,16 +227,24 @@ static bool process_faster_pipeline(engine_t* engine)
 *******************************************************************************/
 static bool process_stable_pipeline(engine_t* engine)
 {
+	if (!engine) {
+		
+		fprintf(stderr, "invalid engine!\n");
+		return false;
+	}
+	
 	if (!_physics_system(engine)) {
 		
 		fprintf(stderr, "error occured in physics system\n");
 		return false;
 	}
+	
 	if (!_render_system(engine)) {
 		
 		fprintf(stderr, "error occured in render system\n");
 		return false;
 	}
+	
 	return true;
 }
 
@@ -235,7 +263,7 @@ static bool _render_system(engine_t* engine)
 	
 	clear();
 	
-	if (!scene_render(&engine->scene)) {
+	if (!scene_render(engine->scene)) {
 		
 		fprintf(stderr, "could not render scene!\n");
 		return false;
@@ -243,16 +271,14 @@ static bool _render_system(engine_t* engine)
 	
 	char str[50];
 	
-	sprintf(str, "metrics.ticks_s: %ld\n", engine->metrics.ticks_s);
-	mvaddnstr(0, 0, str, 30);
-	sprintf(str, "metrics.ticks_e: %ld\n", engine->metrics.ticks_e);
-	mvaddnstr(1, 0, str, 30);
-	sprintf(str, "metrics.ticks_d: %ld\n", engine->metrics.ticks_d);
-	mvaddnstr(2, 0, str, 30);
 	sprintf(str, "metrics.ticks_since_frame: %ld\n", engine->metrics.ticks_since_frame);
-	mvaddnstr(3, 0, str, 30);
-	sprintf(str, "metrics.frames: %d\n", engine->metrics.frames);
-	mvaddnstr(4, 0, str, 30);
+	mvaddnstr(0, 0, str, 50);
+	sprintf(str, "metrics.total_seconds: %ld\n", engine->metrics.total_seconds);
+	mvaddnstr(1, 0, str, 50);
+	sprintf(str, "metrics.total_frames: %ld\n", engine->metrics.total_frames);
+	mvaddnstr(2, 0, str, 50);
+	sprintf(str, "metrics.frames_per_second: %ld\n", engine->metrics.frames_per_second);
+	mvaddnstr(3, 0, str, 50);
 	
 	refresh();
 	
@@ -273,6 +299,7 @@ static bool _input_system(engine_t* engine)
 	}
 	
 	int16_t ch = getch();
+	
 	if (ch == -1) {
 		
 		return true;
@@ -283,7 +310,7 @@ static bool _input_system(engine_t* engine)
 		return false;
 	}
 	
-	if (!scene_process_input(&engine->scene, ch)) {
+	if (!scene_process_input(engine->scene, ch)) {
 		
 		fprintf(stderr, "scene input error!\n");
 		return false;
