@@ -1,8 +1,8 @@
-#ifndef _PLAYER_H_
-#define _PLAYER_H_
+#ifndef _WINDOW_NCURSES_H_
+#define _WINDOW_NCURSES_H_
 /*******************************************************************************
 *  
-*  player.h
+*  window_ncurses.h
 *  
 *  author: AC Pretorius
 *  date  : 01/04/2021
@@ -11,27 +11,20 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "vector2d.h"
 
-#define PNAM_LENGTH 24
+typedef struct Window window_t;
 
-typedef enum PlayerSymbol player_sym_t;
-enum PlayerSymbol {
-	
-	PSYM_NORMAL = '@',
-};
+bool window_create(window_t**);
+bool window_delete(window_t**);
 
-typedef struct Player player_t;
-
-bool player_create(player_t**, char*, vec2d_t);
-bool player_delete(player_t**);
-
-bool player_input(player_t*, int16_t);
-bool player_render(player_t*, bool(*)(int16_t,int,int));
+bool ncurses_render(bool(*)(void*), void*);
+bool ncurses_input(bool(*)(void*,int16_t), void*);
+bool ncurses_draw(int16_t, int, int);
+bool ncurses_string(int, int, char*, int);
 
 /*******************************************************************************
 *  
-*  END player.h
+*  END window_ncurses.h
 *  
 *******************************************************************************/
-#endif // _PLAYER_H_
+#endif // _WINDOW_NCURSES_H_

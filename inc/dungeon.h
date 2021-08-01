@@ -60,7 +60,8 @@ typedef struct Dungeon dungeon_t;
 bool dungeon_create(dungeon_t**, char*, uint32_t, uint32_t, uint32_t);
 bool dungeon_delete(dungeon_t**);
 
-bool dungeon_render(dungeon_t*, bool(*)(int,int,char), int, int);
+bool dungeon_input(dungeon_t*, int16_t);
+bool dungeon_render(dungeon_t*, bool(*)(int16_t,int,int));
 
 /*******************************************************************************
 *  

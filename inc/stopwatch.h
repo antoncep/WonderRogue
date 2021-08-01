@@ -12,9 +12,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MILLISEC_IN_SECOND 1e3
-#define MICROSEC_IN_SECOND 1e6
-#define NANOSECS_IN_SECOND 1e9
+#define MILLISEC_PER_SECOND 1e3
+#define MICROSEC_PER_SECOND 1e6
+#define NANOSECS_PER_SECOND 1e9
 
 typedef struct Stopwatch stopwatch_t;
 

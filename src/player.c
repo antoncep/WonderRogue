@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+#include "scene_node.h"
 #include "player.h"
 
 struct Player {
@@ -18,6 +19,8 @@ struct Player {
 	player_sym_t symbol;
 	vec2d_t position;
 };
+
+static bool player_move_toward(player_t*, vec2d_t);
 
 /*******************************************************************************
 *  
@@ -29,7 +32,7 @@ bool player_create(player_t** player, char* name, vec2d_t position)
 	if (*player) {
 		
 		fprintf(stderr, "invalid handle!\n");
-		return 0;
+		return false;
 	}
 	
 	*player = malloc(sizeof **player);
@@ -64,7 +67,7 @@ bool player_delete(player_t** player)
 	if (!*player) {
 		
 		fprintf(stderr, "invalid handle!\n");
-		return 0;
+		return false;
 	}
 	
 	free(*player);
@@ -78,7 +81,7 @@ bool player_delete(player_t** player)
 *  function
 *  
 *******************************************************************************/
-bool player_render(player_t* player, bool(*draw)(int,int,char))
+bool player_input(player_t* player, int16_t ch)
 {
 	if (!player) {
 		
@@ -86,7 +89,27 @@ bool player_render(player_t* player, bool(*draw)(int,int,char))
 		return false;
 	}
 	
-	draw(player->position.x, player->position.y, player->symbol);
+	switch (ch) {
+		
+		case 0403:
+			player_move_toward(player, VEC2D_UP);
+			break;
+		
+		case 0402:
+			player_move_toward(player, VEC2D_DOWN);
+			break;
+		
+		case 0404:
+			player_move_toward(player, VEC2D_LEFT);
+			break;
+		
+		case 0405:
+			player_move_toward(player, VEC2D_RIGHT);
+			break;
+		
+		default:
+			fprintf(stderr, "unhandled input!\n");
+	}
 	
 	return true;
 }
@@ -96,7 +119,25 @@ bool player_render(player_t* player, bool(*draw)(int,int,char))
 *  function
 *  
 *******************************************************************************/
-bool player_move_toward(player_t* player, vec2d_t direction)
+bool player_render(player_t* player, bool(*draw_ch)(int16_t,int,int))
+{
+	if (!player) {
+		
+		fprintf(stderr, "invalid player!\n");
+		return false;
+	}
+	
+	draw_ch(player->symbol, player->position.x, player->position.y);
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  function
+*  
+*******************************************************************************/
+static bool player_move_toward(player_t* player, vec2d_t direction)
 {
 	if (!player) {
 		

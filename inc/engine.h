@@ -9,11 +9,8 @@
 *  
 *******************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <malloc.h>
-#include <ncurses.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 typedef struct EngineParams engine_params_t;
 struct EngineParams {
@@ -21,7 +18,7 @@ struct EngineParams {
 	uint16_t window_width;
 	uint16_t window_height;
 	uint16_t refresh_rate;
-	uint16_t padding;
+	uint16_t _padding;
 };
 
 typedef struct EngineMetrics engine_metrics_t;
@@ -36,14 +33,13 @@ struct EngineMetrics {
 	uint64_t frames_per_second;
 };
 
-typedef struct Engine engine_t;
-
 typedef struct EngineState engine_state_t;
 struct EngineState {
 	
-	bool (*process_faster_pipeline)(engine_t*);
-	bool (*process_stable_pipeline)(engine_t*);
+	uint64_t bit_flags;
 };
+
+typedef struct Engine engine_t;
 
 bool engine_create(engine_t**);
 bool engine_delete(engine_t**);

@@ -17,9 +17,10 @@ typedef struct Scene scene_t;
 bool scene_create(scene_t**);
 bool scene_delete(scene_t**);
 
+bool scene_input(scene_t*, int16_t);
+bool scene_render(scene_t*, bool(*)(int16_t,int,int));
+
 bool scene_init(scene_t*);
-bool scene_process_input(scene_t*, int16_t);
-bool scene_render(scene_t*);
 
 /*******************************************************************************
 *  

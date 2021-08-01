@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+#include "scene_node.h"
 #include "dungeon.h"
 
 struct Dungeon {
@@ -32,7 +33,7 @@ bool dungeon_create(dungeon_t** dungeon, char* name, uint32_t num_zlevels, uint3
 	if (*dungeon) {
 		
 		fprintf(stderr, "invalid handle!\n");
-		return 0;
+		return false;
 	}
 	
 	*dungeon = malloc(sizeof **dungeon);
@@ -58,13 +59,13 @@ bool dungeon_create(dungeon_t** dungeon, char* name, uint32_t num_zlevels, uint3
 		(*dungeon)->zlevels[z] = create_dlevel(z, size_x, size_y);
 		if (!(*dungeon)->zlevels[z]) {
 			
-			if ((*dungeon) && !dungeon_delete(dungeon)) {
+			if (*dungeon && !dungeon_delete(dungeon)) {
 				
 				fprintf(stderr, "could not delete dungeon!\n");
 				return false;
 			}
 			fprintf(stderr, "could not create dlevel!\n");
-			return NULL;
+			return false;
 		}
 	}
 	
@@ -81,7 +82,7 @@ bool dungeon_delete(dungeon_t** dungeon)
 	if (!*dungeon) {
 		
 		fprintf(stderr, "invalid handle!\n");
-		return 0;
+		return false;
 	}
 	
 	for (uint32_t z = (*dungeon)->num_zlevels - 1; z < (*dungeon)->num_zlevels; z--) {
@@ -89,7 +90,7 @@ bool dungeon_delete(dungeon_t** dungeon)
 		if ((*dungeon)->zlevels[z]) {
 			
 			free((*dungeon)->zlevels[z]);
-			(*dungeon)->zlevels[z] = NULL;
+			(*dungeon)->zlevels[z] = 0;
 		}
 	}
 	
@@ -104,17 +105,36 @@ bool dungeon_delete(dungeon_t** dungeon)
 *  function
 *  
 *******************************************************************************/
-bool dungeon_render(dungeon_t* dungeon, bool(*draw)(int,int,char), int max_x, int max_y)
+bool dungeon_input(dungeon_t* dungeon, int16_t ch)
 {
 	if (!dungeon) {
 		
 		fprintf(stderr, "invalid handle!\n");
-		return 0;
+		return false;
 	}
+	
+	return true;
+}
+
+/*******************************************************************************
+*  
+*  function
+*  
+*******************************************************************************/
+bool dungeon_render(dungeon_t* dungeon, bool(*draw_ch)(int16_t,int,int))
+{
+	if (!dungeon) {
+		
+		fprintf(stderr, "invalid handle!\n");
+		return false;
+	}
+	
+	int32_t max_y = 47;
+	int32_t max_x = 150;
 	
 	for (int32_t map_y = 0; map_y < max_y; map_y++) {
 		for (int32_t map_x = 0; map_x < max_x; map_x++) {
-			draw(map_x, map_y, (*dungeon->zlevels[0]).tiles[(map_y * max_x) + map_x].symbol);
+			draw_ch((*dungeon->zlevels[0]).tiles[(map_y * max_x) + map_x].symbol, map_x, map_y);
 		}
 	}
 	
@@ -128,13 +148,13 @@ bool dungeon_render(dungeon_t* dungeon, bool(*draw)(int,int,char), int max_x, in
 *******************************************************************************/
 static dlevel_t* create_dlevel(uint32_t zlevel, uint32_t size_x, uint32_t size_y)
 {
-	dlevel_t* dlevel = NULL;
+	dlevel_t* dlevel = 0;
 	
 	dlevel = (dlevel_t*)malloc(sizeof(dlevel_t) + (size_x * size_y * sizeof(dtile_t)));
 	if (!dlevel) {
 		
 		fprintf(stderr, "could not allocate memory for dlevel!\n");
-		return NULL;
+		return 0;
 	}
 	
 	dlevel->zlevel = zlevel;

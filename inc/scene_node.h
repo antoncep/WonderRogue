@@ -1,8 +1,8 @@
-#ifndef _PLAYER_H_
-#define _PLAYER_H_
+#ifndef _SCENE_NODE_H_
+#define _SCENE_NODE_H_
 /*******************************************************************************
 *  
-*  player.h
+*  scene_node.h
 *  
 *  author: AC Pretorius
 *  date  : 01/04/2021
@@ -11,27 +11,18 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "vector2d.h"
 
-#define PNAM_LENGTH 24
+typedef struct SceneNode scene_node_t;
 
-typedef enum PlayerSymbol player_sym_t;
-enum PlayerSymbol {
-	
-	PSYM_NORMAL = '@',
-};
+bool scene_node_create(scene_node_t**);
+bool scene_node_delete(scene_node_t**);
 
-typedef struct Player player_t;
-
-bool player_create(player_t**, char*, vec2d_t);
-bool player_delete(player_t**);
-
-bool player_input(player_t*, int16_t);
-bool player_render(player_t*, bool(*)(int16_t,int,int));
+bool scene_node_input(scene_node_t*, int16_t);
+bool scene_node_render(scene_node_t*, bool(*)(int16_t,int,int));
 
 /*******************************************************************************
 *  
-*  END player.h
+*  END scene_node.h
 *  
 *******************************************************************************/
-#endif // _PLAYER_H_
+#endif // _SCENE_NODE_H_

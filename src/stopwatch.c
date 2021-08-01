@@ -32,7 +32,7 @@ bool stopwatch_create(stopwatch_t** stopwatch)
 	if (*stopwatch) {
 		
 		fprintf(stderr, "invalid handle!\n");
-		return 0;
+		return false;
 	}
 	
 	*stopwatch = malloc(sizeof **stopwatch);
@@ -61,7 +61,7 @@ bool stopwatch_delete(stopwatch_t** stopwatch)
 	if (!*stopwatch) {
 		
 		fprintf(stderr, "invalid handle!\n");
-		return 0;
+		return false;
 	}
 	
 	free(*stopwatch);
@@ -123,9 +123,7 @@ uint64_t stopwatch_check(stopwatch_t* stopwatch)
 		return 0;
 	}
 	
-	stopwatch->ticks_s = stopwatch->ticks_s;
-	stopwatch->ticks_e = clock_monotonic_timestamp();
-	stopwatch->ticks_d = stopwatch->ticks_e - stopwatch->ticks_s;
+	stopwatch->ticks_d = clock_monotonic_timestamp() - stopwatch->ticks_s;
 	
 	return stopwatch->ticks_d;
 }
@@ -143,6 +141,8 @@ uint64_t stopwatch_delta(stopwatch_t* stopwatch)
 		return 0;
 	}
 	
+	stopwatch->ticks_d = stopwatch->ticks_e - stopwatch->ticks_s;
+	
 	return stopwatch->ticks_d;
 }
 
@@ -155,9 +155,13 @@ static uint64_t clock_monotonic_timestamp(void)
 {
 	struct timespec clock_monotonic = {0};
 	
-	clock_gettime(CLOCK_MONOTONIC, &clock_monotonic);
+	if (clock_gettime(CLOCK_MONOTONIC, &clock_monotonic)) {
+		
+		fprintf(stderr, "could not get time from clock!\n");
+		return 0;
+	}
 	
-	return ((clock_monotonic.tv_sec * NANOSECS_IN_SECOND) + clock_monotonic.tv_nsec);
+	return ((clock_monotonic.tv_sec * NANOSECS_PER_SECOND) + clock_monotonic.tv_nsec);
 }
 
 /*******************************************************************************

@@ -1,4 +1,4 @@
-CC=gcc
+CC=clang
 CFLAGS=-Wall -g
 CLIBS=-lm -lncurses
 BIN_DIR=bin/
